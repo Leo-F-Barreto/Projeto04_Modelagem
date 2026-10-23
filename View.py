@@ -1,70 +1,77 @@
-from Model import Cliente, Conta, BancoDados
+from Model import BancoDados
+from Controller import ContaController
 
 
-def obter_dados_cliente():
-    """Método de entrada isolado para ler e validar os dados do usuário."""
-    print("\n--- CADASTRO DE CLIENTE ---")
-    nome = input("Digite o Nome do titular: ").strip()
-    cpf = input("Digite o CPF do titular: ").strip()
+class BancoView:
+    def __init__(self):
+        self.db = BancoDados()
+        self.controller = ContaController(view=self, banco_dados=self.db)
 
-    while True:
-        try:
-            saldo_inicial = float(input("Digite o Saldo Inicial (R$): "))
-            if saldo_inicial < 0:
-                print("O saldo inicial não pode ser negativo.")
-                continue
-            break
-        except ValueError:
-            print("Por favor, digite um valor numérico válido.")
+    def obter_dados_cliente(self):
+        """Método de leitura da View."""
+        print("\n--- CADASTRO DE CLIENTE ---")
+        nome = input("Digite o Nome do titular: ").strip()
+        cpf = input("Digite o CPF do titular: ").strip()
 
-    return nome, cpf, saldo_inicial
+        while True:
+            try:
+                saldo_inicial = float(input("Digite o Saldo Inicial (R$): "))
+                if saldo_inicial < 0:
+                    print("O saldo inicial não pode ser negativo.")
+                    continue
+                break
+            except ValueError:
+                print("Por favor, digite um valor numérico válido.")
 
+        return nome, cpf, saldo_inicial
 
-def executar_interface():
-    """Interface principal que gerencia o fluxo do terminal."""
-    db = BancoDados()
-    contador = 1
+    def exibir_conta_criada(self, conta):
+        """Exibe os dados da conta recém-criada."""
+        print("\n" + "=" * 40)
+        print(f"{'CONTA CRIADA COM SUCESSO':^40}")
+        print("=" * 40)
+        print(f"Número da Conta : {conta.numero}")
+        print(f"Titular          : {conta.titular.nome}")
+        print(f"CPF do Titular   : {conta.titular.cpf}")
+        print(f"Saldo Inicial    : R$ {conta.saldo:.2f}")
+        print("=" * 40 + "\n")
 
-    while True:
-        print("=== SISTEMA BANCÁRIO ===")
-        print("1. Cadastrar Nova Conta")
-        print("2. Imprimir Dados de uma Conta")
-        print("3. Sair")
+    def exibir_lista_contas(self, contas):
+        """Exibe todas as contas existentes formatadas na tela."""
+        print("\n" + "=" * 55)
+        print(f"{'LISTA DE CONTAS EXISTENTES':^55}")
+        print("=" * 55)
+        print(f"{'CONTA':<7} | {'TITULAR':<25} | {'SALDO':<15}")
+        print("-" * 55)
+        for conta in contas:
+            print(f"{conta.numero:<7} | {conta.titular.nome:<25} | R$ {conta.saldo:>12.2f}")
+        print("=" * 55 + "\n")
 
-        opcao = input("Escolha uma opção: ").strip()
+    def exibir_mensagem_erro(self, mensagem):
+        """Exibe avisos ou erros formatados."""
+        print(f"\n⚠️  [Aviso]: {mensagem}\n")
 
-        if opcao == "1":
-            # Chama o método isolado de leitura de dados
-            nome, cpf, saldo_inicial = obter_dados_cliente()
+    def executar_interface(self):
+        """Loop principal do menu no terminal."""
+        while True:
+            print("=== SISTEMA BANCÁRIO ===")
+            print("1. Cadastrar Nova Conta")
+            print("2. Visualizar Contas Existentes")
+            print("3. Sair")
 
-            # Geração automática do número da conta
-            numero_conta = f"{contador:03d}"
+            opcao = input("Escolha uma opção: ").strip()
 
-            # Instanciação dos objetos usando os dados lidos
-            cliente = Cliente(nome, cpf)
-            conta = Conta(numero_conta, cliente, saldo_inicial)
-
-            # Salva no banco de dados simulado
-            db.salvar_conta(conta)
-            print(f"\nConta cadastrada com sucesso! Número: {numero_conta}")
-            contador += 1
-
-        elif opcao == "2":
-            numero_busca = input("\nDigite o número da conta (ex: 001): ").strip()
-            conta_encontrada = db.buscar_conta_por_numero(numero_busca)
-
-            if conta_encontrada:
-                # Chama o método de impressão formatada da própria conta
-                conta_encontrada.imprimir_dados()
+            if opcao == "1":
+                self.controller.cadastrar_nova_conta()
+            elif opcao == "2":
+                self.controller.listar_contas()
+            elif opcao == "3":
+                print("\nEncerrando o sistema. Até logo!")
+                break
             else:
-                print("Conta não encontrada!\n")
-
-        elif opcao == "3":
-            print("\nEncerrando o sistema. Até logo!")
-            break
-        else:
-            print("\nOpção inválida!\n")
+                print("\nOpção inválida!\n")
 
 
 if __name__ == "__main__":
-    executar_interface()
+    app = BancoView()
+    app.executar_interface()
