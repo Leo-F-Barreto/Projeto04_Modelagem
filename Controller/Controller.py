@@ -1,4 +1,4 @@
-from Model import Cliente, Conta, BancoDados
+from Model.Model import Cliente, Conta, BancoDados
 
 
 class ContaController:

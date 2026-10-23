@@ -1,5 +1,5 @@
-from Model import BancoDados
-from Controller import ContaController
+from Model.Model import BancoDados
+from Controller.Controller import ContaController
 
 
 class BancoView:
@@ -49,7 +49,7 @@ class BancoView:
 
     def exibir_mensagem_erro(self, mensagem):
         """Exibe avisos ou erros formatados."""
-        print(f"\n⚠️  [Aviso]: {mensagem}\n")
+        print(f"\n[Aviso]: {mensagem}\n")
 
     def executar_interface(self):
         """Loop principal do menu no terminal."""
